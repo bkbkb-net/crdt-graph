@@ -2,4 +2,4 @@ mod error;
 mod graph;
 
 pub use error::TwoPTwoPGraphError;
-pub use graph::TwoPTwoPGraph;
+pub use graph::{TwoPTwoPEdge, TwoPTwoPGraph, TwoPTwoPVertex, UpdateType};
