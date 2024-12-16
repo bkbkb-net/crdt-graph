@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::fmt::Debug;
 use std::hash::Hash;
 
@@ -21,8 +20,8 @@ pub enum UpdateType {
 
 pub struct TwoPTwoPGraph<V, E, I>
 where
-    V: TwoPTwoPVertex<I>,
-    E: TwoPTwoPEdge<I>,
+    V: Clone + TwoPTwoPVertex<I>,
+    E: Clone + TwoPTwoPEdge<I>,
     I: Eq + Hash + Debug + Clone,
 {
     vertices_added: Vec<V>,
@@ -34,8 +33,8 @@ where
 
 impl<V, E, I> TwoPTwoPGraph<V, E, I>
 where
-    V: TwoPTwoPVertex<I>,
-    E: TwoPTwoPEdge<I>,
+    V: Clone + TwoPTwoPVertex<I>,
+    E: Clone + TwoPTwoPEdge<I>,
     I: Eq + Hash + Debug + Clone,
 {
     pub fn new() -> Self {
@@ -200,4 +199,38 @@ where
     //         }
     //     }
     // }
+
+    pub fn into_petgraph(self) -> petgraph::graph::DiGraph<V, E> {
+        let mut graph = petgraph::graph::DiGraph::new();
+        let mut vertex_map = std::collections::HashMap::new();
+        for va in self.vertices_added.iter() {
+            let mut found = false;
+            for vr in self.vertices_removed.iter() {
+                if va.id() == vr.id() {
+                    found = true;
+                }
+            }
+            if found == false {
+                let vertex = graph.add_node(va.clone());
+                vertex_map.insert(va.id().clone(), vertex);
+            }
+        }
+        for ea in self.edges_added.iter() {
+            let mut found = false;
+            for er in self.edges_removed.iter() {
+                if ea.id() == er.id() {
+                    found = true;
+                }
+            }
+            if found == false {
+                // edge will be added only if source and target vertices are present
+                if let Some(source) = vertex_map.get(ea.source()) {
+                    if let Some(target) = vertex_map.get(ea.target()) {
+                        graph.add_edge(*source, *target, ea.clone());
+                    }
+                }
+            }
+        }
+        graph
+    }
 }
