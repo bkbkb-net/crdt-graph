@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fmt::Debug;
 use std::hash::Hash;
 
 use crate::TwoPTwoPGraphError;
@@ -22,7 +23,7 @@ pub struct TwoPTwoPGraph<V, E, I>
 where
     V: TwoPTwoPVertex<I>,
     E: TwoPTwoPEdge<I>,
-    I: Eq + Hash,
+    I: Eq + Hash + Debug + Clone,
 {
     vertices_added: Vec<V>,
     vertices_removed: Vec<V>,
@@ -35,7 +36,7 @@ impl<V, E, I> TwoPTwoPGraph<V, E, I>
 where
     V: TwoPTwoPVertex<I>,
     E: TwoPTwoPEdge<I>,
-    I: Eq + Hash,
+    I: Eq + Hash + Debug + Clone,
 {
     pub fn new() -> Self {
         TwoPTwoPGraph {
@@ -82,11 +83,11 @@ where
         &mut self,
         vertex: V,
         _update_type: UpdateType,
-    ) -> Result<(), TwoPTwoPGraphError> {
+    ) -> Result<(), TwoPTwoPGraphError<I>> {
         // if matches!(update_type, UpdateType::AtSource) {}
         for va in self.vertices_added.iter() {
             if va.id() == vertex.id() {
-                return Err(TwoPTwoPGraphError::VertexAlreadyExists);
+                return Err(TwoPTwoPGraphError::VertexAlreadyExists(vertex.id().clone()));
             }
         }
         self.vertices_added.push(vertex);
@@ -94,15 +95,26 @@ where
         Ok(())
     }
 
-    pub fn add_edge(&mut self, edge: E, update_type: UpdateType) -> Result<(), TwoPTwoPGraphError> {
+    pub fn add_edge(
+        &mut self,
+        edge: E,
+        update_type: UpdateType,
+    ) -> Result<(), TwoPTwoPGraphError<I>> {
         if matches!(update_type, UpdateType::AtSource) {
-            if !self.lookup_vertex(&edge.source()) || !self.lookup_vertex(&edge.target()) {
-                return Err(TwoPTwoPGraphError::VertexDoesNotExist);
+            if !self.lookup_vertex(&edge.source()) {
+                return Err(TwoPTwoPGraphError::VertexDoesNotExists(
+                    edge.source().clone(),
+                ));
+            }
+            if !self.lookup_vertex(&edge.target()) {
+                return Err(TwoPTwoPGraphError::VertexDoesNotExists(
+                    edge.target().clone(),
+                ));
             }
         }
         for ea in self.edges_added.iter() {
             if ea.id() == edge.id() {
-                return Err(TwoPTwoPGraphError::EdgeAlreadyExists);
+                return Err(TwoPTwoPGraphError::EdgeAlreadyExists(edge.id().clone()));
             }
         }
         self.edges_added.push(edge);
@@ -110,13 +122,82 @@ where
         Ok(())
     }
 
-    // pub fn remove_vertex(&mut self, vertex: V) {
-    //     self.vertices_removed.insert(vertex);
-    //     self.vertices_added.remove(&vertex);
-    // }
+    pub fn remove_vertex(
+        &mut self,
+        vertex: V,
+        update_type: UpdateType,
+    ) -> Result<(), TwoPTwoPGraphError<I>> {
+        if matches!(update_type, UpdateType::AtSource) {
+            // pre
+            if !self.lookup_vertex(vertex.id()) {
+                return Err(TwoPTwoPGraphError::VertexDoesNotExists(vertex.id().clone()));
+            }
+            // pre
+            for ea in self.edges_added.iter() {
+                let mut found = false;
+                for er in self.edges_removed.iter() {
+                    if ea.id() == er.id() {
+                        found = true;
+                    }
+                }
+                if found == false {
+                    if ea.source() == vertex.id() || ea.target() == vertex.id() {
+                        return Err(TwoPTwoPGraphError::VertexHasEdge(
+                            vertex.id().clone(),
+                            ea.id().clone(),
+                        ));
+                    }
+                }
+            }
+        }
 
-    // pub fn remove_edge(&mut self, edge: E) {
-    //     self.edges_removed.insert(edge);
-    //     self.edges_added.remove(&edge);
+        // TODO: pre addVertex(w) delivered
+
+        for vr in self.vertices_removed.iter() {
+            if vr.id() == vertex.id() {
+                return Err(TwoPTwoPGraphError::VertexAlreadyExists(vertex.id().clone()));
+            }
+        }
+        self.vertices_removed.push(vertex);
+
+        Ok(())
+    }
+
+    pub fn remove_edge(
+        &mut self,
+        edge: E,
+        update_type: UpdateType,
+    ) -> Result<(), TwoPTwoPGraphError<I>> {
+        if matches!(update_type, UpdateType::AtSource) {
+            // pre
+            if self.lookup_edge(&edge) == false {
+                return Err(TwoPTwoPGraphError::EdgeDoesNotExists(edge.id().clone()));
+            }
+        }
+
+        // TODO: addEdge(w) delivered
+
+        for er in self.edges_removed.iter() {
+            if er.id() == edge.id() {
+                return Err(TwoPTwoPGraphError::EdgeAlreadyExists(edge.id().clone()));
+            }
+        }
+        self.edges_removed.push(edge);
+
+        Ok(())
+    }
+
+    // fn ea_divide_er<T: Fn(&E)>(&self, callback: T) {
+    //     for ea in self.edges_added.iter() {
+    //         let mut found = false;
+    //         for er in self.edges_removed.iter() {
+    //             if ea.id() == er.id() {
+    //                 found = true;
+    //             }
+    //         }
+    //         if found == false {
+    //             callback(ea);
+    //         }
+    //     }
     // }
 }
