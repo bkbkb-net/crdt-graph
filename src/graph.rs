@@ -3,14 +3,23 @@ use std::hash::Hash;
 
 use crate::TwoPTwoPGraphError;
 
-pub trait TwoPTwoPVertex<Id> {
+pub trait TwoPTwoPId<Id> {
     fn id(&self) -> &Id;
 }
 
-pub trait TwoPTwoPEdge<Id> {
-    fn id(&self) -> &Id;
+pub trait TwoPTwoPAddVertex<Id>: TwoPTwoPId<Id> {}
+
+pub trait TwoPTwoPRemoveVertex<Id>: TwoPTwoPId<Id> {
+    fn add_vertex_id(&self) -> &Id;
+}
+
+pub trait TwoPTwoPAddEdge<Id>: TwoPTwoPId<Id> {
     fn source(&self) -> &Id;
     fn target(&self) -> &Id;
+}
+
+pub trait TwoPTwoPRemoveEdge<Id>: TwoPTwoPId<Id> {
+    fn add_edge_id(&self) -> &Id;
 }
 
 pub enum UpdateType {
@@ -19,30 +28,34 @@ pub enum UpdateType {
 }
 
 #[derive(Clone, Debug)]
-pub enum UpdateOperation<V, E> {
-    AddVertex(V),
-    AddEdge(E),
-    RemoveVertex(V),
-    RemoveEdge(E),
+pub enum UpdateOperation<VA, VR, EA, ER> {
+    AddVertex(VA),
+    RemoveVertex(VR),
+    AddEdge(EA),
+    RemoveEdge(ER),
 }
 
-pub struct TwoPTwoPGraph<V, E, I>
+pub struct TwoPTwoPGraph<VA, VR, EA, ER, I>
 where
-    V: Clone + TwoPTwoPVertex<I>,
-    E: Clone + TwoPTwoPEdge<I>,
+    VA: Clone + TwoPTwoPAddVertex<I>,
+    VR: Clone + TwoPTwoPRemoveVertex<I>,
+    EA: Clone + TwoPTwoPAddEdge<I>,
+    ER: Clone + TwoPTwoPRemoveEdge<I>,
     I: Eq + Hash + Debug + Clone,
 {
-    vertices_added: Vec<V>,
-    vertices_removed: Vec<V>,
-    edges_added: Vec<E>,
-    edges_removed: Vec<E>,
+    vertices_added: Vec<VA>,
+    vertices_removed: Vec<VR>,
+    edges_added: Vec<EA>,
+    edges_removed: Vec<ER>,
     _phantom: std::marker::PhantomData<I>,
 }
 
-impl<V, E, I> TwoPTwoPGraph<V, E, I>
+impl<VA, VR, EA, ER, I> TwoPTwoPGraph<VA, VR, EA, ER, I>
 where
-    V: Clone + TwoPTwoPVertex<I>,
-    E: Clone + TwoPTwoPEdge<I>,
+    VA: Clone + TwoPTwoPAddVertex<I>,
+    VR: Clone + TwoPTwoPRemoveVertex<I>,
+    EA: Clone + TwoPTwoPAddEdge<I>,
+    ER: Clone + TwoPTwoPRemoveEdge<I>,
     I: Eq + Hash + Debug + Clone,
 {
     pub fn new() -> Self {
@@ -88,7 +101,7 @@ where
 
     pub fn update_operation(
         &mut self,
-        update_operation: UpdateOperation<V, E>,
+        update_operation: UpdateOperation<VA, VR, EA, ER>,
     ) -> Result<(), TwoPTwoPGraphError<I>> {
         match update_operation {
             UpdateOperation::AddVertex(vertex) => self.add_vertex(vertex, UpdateType::AtSource),
@@ -102,7 +115,7 @@ where
 
     pub fn add_vertex(
         &mut self,
-        vertex: V,
+        vertex: VA,
         _update_type: UpdateType,
     ) -> Result<(), TwoPTwoPGraphError<I>> {
         // if matches!(update_type, UpdateType::AtSource) {}
@@ -118,7 +131,7 @@ where
 
     pub fn add_edge(
         &mut self,
-        edge: E,
+        edge: EA,
         update_type: UpdateType,
     ) -> Result<(), TwoPTwoPGraphError<I>> {
         if matches!(update_type, UpdateType::AtSource) {
@@ -145,9 +158,10 @@ where
 
     pub fn remove_vertex(
         &mut self,
-        vertex: V,
+        vertex: VR,
         update_type: UpdateType,
     ) -> Result<(), TwoPTwoPGraphError<I>> {
+        todo!("not working");
         if matches!(update_type, UpdateType::AtSource) {
             // pre
             if !self.lookup_vertex(vertex.id()) {
@@ -186,9 +200,10 @@ where
 
     pub fn remove_edge(
         &mut self,
-        edge: E,
+        edge: ER,
         update_type: UpdateType,
     ) -> Result<(), TwoPTwoPGraphError<I>> {
+        todo!("not working");
         if matches!(update_type, UpdateType::AtSource) {
             // pre
             if self.lookup_edge(&edge) == false {
