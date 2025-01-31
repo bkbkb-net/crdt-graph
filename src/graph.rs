@@ -18,6 +18,14 @@ pub enum UpdateType {
     Downstream,
 }
 
+#[derive(Clone, Debug)]
+pub enum UpdateOperation<V, E> {
+    AddVertex(V),
+    AddEdge(E),
+    RemoveVertex(V),
+    RemoveEdge(E),
+}
+
 pub struct TwoPTwoPGraph<V, E, I>
 where
     V: Clone + TwoPTwoPVertex<I>,
@@ -76,6 +84,20 @@ where
         }
 
         return false;
+    }
+
+    pub fn update_operation(
+        &mut self,
+        update_operation: UpdateOperation<V, E>,
+    ) -> Result<(), TwoPTwoPGraphError<I>> {
+        match update_operation {
+            UpdateOperation::AddVertex(vertex) => self.add_vertex(vertex, UpdateType::AtSource),
+            UpdateOperation::AddEdge(edge) => self.add_edge(edge, UpdateType::AtSource),
+            UpdateOperation::RemoveVertex(vertex) => {
+                self.remove_vertex(vertex, UpdateType::AtSource)
+            }
+            UpdateOperation::RemoveEdge(edge) => self.remove_edge(edge, UpdateType::AtSource),
+        }
     }
 
     pub fn add_vertex(
