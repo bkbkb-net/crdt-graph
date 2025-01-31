@@ -71,8 +71,8 @@ where
     pub fn lookup_vertex(&self, vertex_id: &I) -> bool {
         for va in self.vertices_added.iter() {
             if va.id() == vertex_id {
-                for ve in self.vertices_removed.iter() {
-                    if ve.id() == vertex_id {
+                for vr in self.vertices_removed.iter() {
+                    if vr.add_vertex_id() == vertex_id {
                         return false;
                     }
                 }
@@ -82,21 +82,32 @@ where
         return false;
     }
 
-    pub fn lookup_edge(&self, edge: &E) -> bool {
-        if self.lookup_vertex(&edge.source()) && self.lookup_vertex(&edge.target()) {
-            for ea in self.edges_added.iter() {
-                if ea.id() == edge.id() {
+    pub fn get_edge_added_from_remove_edge(&self, remove_edge: &ER) -> Option<&EA> {
+        for ea in self.edges_added.iter() {
+            if ea.id() == remove_edge.add_edge_id() {
+                return Some(ea);
+            }
+        }
+        return None;
+    }
+
+    pub fn lookup_from_remove_edge(&self, remove_edge: &ER) -> bool {
+        match self.get_edge_added_from_remove_edge(remove_edge) {
+            Some(edge_added) => {
+                if self.lookup_vertex(&edge_added.source())
+                    && self.lookup_vertex(&edge_added.target())
+                {
                     for er in self.edges_removed.iter() {
-                        if er.id() == edge.id() {
+                        if er.add_edge_id() == remove_edge.add_edge_id() {
                             return false;
                         }
                     }
                     return true;
                 }
+                return false;
             }
+            None => false,
         }
-
-        return false;
     }
 
     pub fn update_operation(
@@ -161,24 +172,27 @@ where
         vertex: VR,
         update_type: UpdateType,
     ) -> Result<(), TwoPTwoPGraphError<I>> {
-        todo!("not working");
         if matches!(update_type, UpdateType::AtSource) {
             // pre
-            if !self.lookup_vertex(vertex.id()) {
-                return Err(TwoPTwoPGraphError::VertexDoesNotExists(vertex.id().clone()));
+            if !self.lookup_vertex(vertex.add_vertex_id()) {
+                return Err(TwoPTwoPGraphError::VertexDoesNotExists(
+                    vertex.add_vertex_id().clone(),
+                ));
             }
             // pre
             for ea in self.edges_added.iter() {
                 let mut found = false;
                 for er in self.edges_removed.iter() {
-                    if ea.id() == er.id() {
+                    if ea.id() == er.add_edge_id() {
                         found = true;
                     }
                 }
                 if found == false {
-                    if ea.source() == vertex.id() || ea.target() == vertex.id() {
+                    if ea.source() == vertex.add_vertex_id()
+                        || ea.target() == vertex.add_vertex_id()
+                    {
                         return Err(TwoPTwoPGraphError::VertexHasEdge(
-                            vertex.id().clone(),
+                            vertex.add_vertex_id().clone(),
                             ea.id().clone(),
                         ));
                     }
@@ -200,50 +214,39 @@ where
 
     pub fn remove_edge(
         &mut self,
-        edge: ER,
+        remove_edge: ER,
         update_type: UpdateType,
     ) -> Result<(), TwoPTwoPGraphError<I>> {
-        todo!("not working");
         if matches!(update_type, UpdateType::AtSource) {
             // pre
-            if self.lookup_edge(&edge) == false {
-                return Err(TwoPTwoPGraphError::EdgeDoesNotExists(edge.id().clone()));
+            if self.lookup_from_remove_edge(&remove_edge) == false {
+                return Err(TwoPTwoPGraphError::EdgeDoesNotExists(
+                    remove_edge.add_edge_id().clone(),
+                ));
             }
         }
 
         // TODO: addEdge(w) delivered
 
         for er in self.edges_removed.iter() {
-            if er.id() == edge.id() {
-                return Err(TwoPTwoPGraphError::EdgeAlreadyExists(edge.id().clone()));
+            if er.id() == remove_edge.id() {
+                return Err(TwoPTwoPGraphError::EdgeAlreadyExists(
+                    remove_edge.id().clone(),
+                ));
             }
         }
-        self.edges_removed.push(edge);
+        self.edges_removed.push(remove_edge);
 
         Ok(())
     }
 
-    // fn ea_divide_er<T: Fn(&E)>(&self, callback: T) {
-    //     for ea in self.edges_added.iter() {
-    //         let mut found = false;
-    //         for er in self.edges_removed.iter() {
-    //             if ea.id() == er.id() {
-    //                 found = true;
-    //             }
-    //         }
-    //         if found == false {
-    //             callback(ea);
-    //         }
-    //     }
-    // }
-
-    pub fn into_petgraph(self) -> petgraph::graph::DiGraph<V, E> {
+    pub fn into_petgraph(self) -> petgraph::graph::DiGraph<VA, EA> {
         let mut graph = petgraph::graph::DiGraph::new();
         let mut vertex_map = std::collections::HashMap::new();
         for va in self.vertices_added.iter() {
             let mut found = false;
             for vr in self.vertices_removed.iter() {
-                if va.id() == vr.id() {
+                if va.id() == vr.add_vertex_id() {
                     found = true;
                 }
             }
@@ -255,7 +258,7 @@ where
         for ea in self.edges_added.iter() {
             let mut found = false;
             for er in self.edges_removed.iter() {
-                if ea.id() == er.id() {
+                if ea.id() == er.add_edge_id() {
                     found = true;
                 }
             }
