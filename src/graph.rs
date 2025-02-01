@@ -241,7 +241,7 @@ where
         Ok(())
     }
 
-    pub fn into_petgraph(self) -> petgraph::graph::DiGraph<VA, EA> {
+    pub fn generate_petgraph(&self) -> petgraph::graph::DiGraph<VA, EA> {
         let mut graph = petgraph::graph::DiGraph::new();
         let mut vertex_map = std::collections::HashMap::new();
         for va in self.vertices_added.iter() {
