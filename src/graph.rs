@@ -35,6 +35,7 @@ pub enum UpdateOperation<VA, VR, EA, ER> {
     RemoveEdge(ER),
 }
 
+#[derive(Clone, Debug)]
 pub struct TwoPTwoPGraph<VA, VR, EA, ER, I>
 where
     VA: Clone + TwoPTwoPAddVertex<I>,
