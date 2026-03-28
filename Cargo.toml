@@ -1,8 +1,13 @@
 [package]
 name = "crdt-graph"
-version = "0.1.0"
+version = "0.2.0"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/bkbkb-net/crdt-graph"
+documentation = "https://docs.rs/crdt-graph/"
+description = "An op-based 2P2P-Graph CRDT implementation in Rust."
+readme = "README.md"
 edition = "2021"
 
 [dependencies]
-thiserror = "2.0.11"
-petgraph = "0.7.1"
+thiserror = "2.0.18"
+petgraph = { version = "0.8.3", default-features = false, features = ["std"] }
