@@ -1,6 +1,6 @@
 [package]
 name = "crdt-graph"
-version = "0.2.0"
+version = "0.3.0"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bkbkb-net/crdt-graph"
 documentation = "https://docs.rs/crdt-graph/"
@@ -11,3 +11,5 @@ edition = "2021"
 [dependencies]
 thiserror = "2.0.18"
 petgraph = { version = "0.8.3", default-features = false, features = ["std"] }
+flatbuffers = "25.12.19"
+uuid = { version = "1", features = ["v7"] }

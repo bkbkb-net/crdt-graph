@@ -1,0 +1,48 @@
+// FlatBuffers schema for crdt-graph operations.
+//
+// To regenerate Rust code after modifying this file:
+//   flatc --rust -o src/flatbuffers/ schemas/crdt_graph.fbs
+
+namespace crdt_graph.fb;
+
+struct Uuid {
+  bytes:[ubyte:16];
+}
+
+table AddVertex {
+  id:Uuid (required);
+}
+
+table RemoveVertex {
+  id:Uuid (required);
+  add_vertex_id:Uuid (required);
+}
+
+table AddEdge {
+  id:Uuid (required);
+  source:Uuid (required);
+  target:Uuid (required);
+}
+
+table RemoveEdge {
+  id:Uuid (required);
+  add_edge_id:Uuid (required);
+}
+
+union Operation {
+  AddVertex,
+  RemoveVertex,
+  AddEdge,
+  RemoveEdge,
+}
+
+table UpdateOperation {
+  operation:Operation (required);
+}
+
+table OperationLog {
+  operations:[UpdateOperation] (required);
+}
+
+root_type OperationLog;
+file_identifier "CRDT";

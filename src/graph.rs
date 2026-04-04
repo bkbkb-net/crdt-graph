@@ -41,7 +41,7 @@ pub enum UpdateType {
 }
 
 /// An update operation that can be applied to a [`TwoPTwoPGraph`].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UpdateOperation<VA, VR, EA, ER> {
     AddVertex(VA),
     RemoveVertex(VR),
@@ -75,6 +75,19 @@ where
     edges_added: Vec<EA>,
     edges_removed: Vec<ER>,
     _phantom: std::marker::PhantomData<I>,
+}
+
+impl<VA, VR, EA, ER, I> Default for TwoPTwoPGraph<VA, VR, EA, ER, I>
+where
+    VA: Clone + TwoPTwoPAddVertex<I>,
+    VR: Clone + TwoPTwoPRemoveVertex<I>,
+    EA: Clone + TwoPTwoPAddEdge<I>,
+    ER: Clone + TwoPTwoPRemoveEdge<I>,
+    I: Eq + Hash + Debug + Clone,
+{
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<VA, VR, EA, ER, I> TwoPTwoPGraph<VA, VR, EA, ER, I>
@@ -343,5 +356,56 @@ where
             }
         }
         graph
+    }
+
+    /// Returns the number of active vertices (`V_A \ V_R`).
+    pub fn vertex_count(&self) -> usize {
+        self.vertices_added
+            .iter()
+            .filter(|va| {
+                !self
+                    .vertices_removed
+                    .iter()
+                    .any(|vr| va.id() == vr.add_vertex_id())
+            })
+            .count()
+    }
+
+    /// Returns the number of active edges (`E_A \ E_R`).
+    pub fn edge_count(&self) -> usize {
+        self.edges_added
+            .iter()
+            .filter(|ea| {
+                !self
+                    .edges_removed
+                    .iter()
+                    .any(|er| ea.id() == er.add_edge_id())
+            })
+            .count()
+    }
+
+    /// Returns `true` if the graph has no active vertices and no active edges.
+    pub fn is_empty(&self) -> bool {
+        self.vertex_count() == 0 && self.edge_count() == 0
+    }
+
+    /// Returns an iterator over all active (non-removed) vertex-add operations.
+    pub fn vertices(&self) -> impl Iterator<Item = &VA> {
+        self.vertices_added.iter().filter(|va| {
+            !self
+                .vertices_removed
+                .iter()
+                .any(|vr| va.id() == vr.add_vertex_id())
+        })
+    }
+
+    /// Returns an iterator over all active (non-removed) edge-add operations.
+    pub fn edges(&self) -> impl Iterator<Item = &EA> {
+        self.edges_added.iter().filter(|ea| {
+            !self
+                .edges_removed
+                .iter()
+                .any(|er| ea.id() == er.add_edge_id())
+        })
     }
 }

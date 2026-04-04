@@ -1,0 +1,56 @@
+// FlatBuffers schema for crdt-graph operations WITH arbitrary payload data
+// on vertices and edges.
+//
+// Use this format when vertices / edges carry additional information beyond
+// their identifiers (e.g. labels, weights, JSON blobs, binary data …).
+//
+// To regenerate Rust code after modifying this file:
+//   flatc --rust -o src/flatbuffers/ schemas/crdt_graph_with_data.fbs
+
+namespace crdt_graph.fb_data;
+
+struct Uuid {
+  bytes:[ubyte:16];
+}
+
+table AddVertex {
+  id:Uuid (required);
+  /// Arbitrary payload attached to this vertex.
+  data:[ubyte];
+}
+
+table RemoveVertex {
+  id:Uuid (required);
+  add_vertex_id:Uuid (required);
+}
+
+table AddEdge {
+  id:Uuid (required);
+  source:Uuid (required);
+  target:Uuid (required);
+  /// Arbitrary payload attached to this edge.
+  data:[ubyte];
+}
+
+table RemoveEdge {
+  id:Uuid (required);
+  add_edge_id:Uuid (required);
+}
+
+union Operation {
+  AddVertex,
+  RemoveVertex,
+  AddEdge,
+  RemoveEdge,
+}
+
+table UpdateOperation {
+  operation:Operation (required);
+}
+
+table OperationLog {
+  operations:[UpdateOperation] (required);
+}
+
+root_type OperationLog;
+file_identifier "CRD2";
