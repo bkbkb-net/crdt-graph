@@ -408,4 +408,24 @@ where
                 .any(|er| ea.id() == er.add_edge_id())
         })
     }
+
+    /// Returns a slice of all vertex-add operations ever recorded (`V_A`).
+    pub fn all_vertices_added(&self) -> &[VA] {
+        &self.vertices_added
+    }
+
+    /// Returns a slice of all vertex-remove operations ever recorded (`V_R`).
+    pub fn all_vertices_removed(&self) -> &[VR] {
+        &self.vertices_removed
+    }
+
+    /// Returns a slice of all edge-add operations ever recorded (`E_A`).
+    pub fn all_edges_added(&self) -> &[EA] {
+        &self.edges_added
+    }
+
+    /// Returns a slice of all edge-remove operations ever recorded (`E_R`).
+    pub fn all_edges_removed(&self) -> &[ER] {
+        &self.edges_removed
+    }
 }

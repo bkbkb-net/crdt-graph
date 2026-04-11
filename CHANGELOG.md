@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-04-11
+
+### Added
+
+- **CRDT history accessors** — Added `all_vertices_added()`, `all_vertices_removed()`, `all_edges_added()`, and `all_edges_removed()` on `TwoPTwoPGraph` for inspecting full operation history.
+- **README badges** — Added Crates.io, Docs.rs, license, and GitHub badges.
+
 ## [0.3.0] - 2025-04-05
 
 ### Added
@@ -41,5 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `generate_petgraph()` for converting CRDT state to `petgraph::DiGraph`.
 - `TwoPTwoPGraphError` with 7 error variants for precondition violations.
 
+[0.3.1]: https://github.com/bkbkb-net/crdt-graph/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bkbkb-net/crdt-graph/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bkbkb-net/crdt-graph/releases/tag/v0.2.0

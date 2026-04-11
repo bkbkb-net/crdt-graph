@@ -1,5 +1,10 @@
 # crdt-graph
 
+[![Crates.io](https://img.shields.io/crates/v/crdt-graph?style=flat-square)](https://crates.io/crates/crdt-graph)
+[![Docs.rs](https://img.shields.io/docsrs/crdt-graph?style=flat-square)](https://docs.rs/crdt-graph)
+[![License](https://img.shields.io/crates/l/crdt-graph?style=flat-square)](https://crates.io/crates/crdt-graph)
+[![GitHub](https://img.shields.io/badge/GitHub-bkbkb--net%2Fcrdt--graph-181717?style=flat-square&logo=github)](https://github.com/bkbkb-net/crdt-graph)
+
 An op-based **2P2P-Graph CRDT** implementation in Rust.
 
 Based on the 2P2P-Graph specification from Shapiro et al., *"A comprehensive study of Convergent and Commutative Replicated Data Types"* (2011).
