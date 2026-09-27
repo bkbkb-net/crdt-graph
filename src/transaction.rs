@@ -14,10 +14,10 @@
 //! The stack only owns the bookkeeping — undo / redo / drop / clear /
 //! history-limit eviction.
 //!
-//! Specialising layers (e.g. `crdf`) wrap this stack and supply
+//! Specialising layers (e.g. `crdf`) wrap this stack, and get a
+//! transactional undo/redo API tailored to their data model by supplying
 //! - a diff routine that produces a list of compensating ops,
-//! - an apply routine that executes ops against the graph,
-//! to get a transactional undo/redo API tailored to their data model.
+//! - an apply routine that executes ops against the graph.
 
 /// Default cap on the number of transactions retained per stack. Old
 /// entries are dropped from the bottom so long sessions don't grow

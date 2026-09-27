@@ -205,12 +205,12 @@ where
         update_type: UpdateType,
     ) -> Result<(), TwoPTwoPGraphError<I>> {
         if matches!(update_type, UpdateType::AtSource) {
-            if !self.lookup_vertex(&edge.source()) {
+            if !self.lookup_vertex(edge.source()) {
                 return Err(TwoPTwoPGraphError::VertexDoesNotExists(
                     edge.source().clone(),
                 ));
             }
-            if !self.lookup_vertex(&edge.target()) {
+            if !self.lookup_vertex(edge.target()) {
                 return Err(TwoPTwoPGraphError::VertexDoesNotExists(
                     edge.target().clone(),
                 ));
