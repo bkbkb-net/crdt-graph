@@ -1,11 +1,17 @@
+// As flatc wrote it: regenerated, never edited, so never formatted.
+#[rustfmt::skip]
 #[allow(unused_imports, dead_code, clippy::all)]
 #[path = "crdt_graph_generated.rs"]
 mod crdt_graph_generated;
 
+// As flatc wrote it: regenerated, never edited, so never formatted.
+#[rustfmt::skip]
 #[allow(unused_imports, dead_code, clippy::all)]
 #[path = "crdt_graph_with_data_generated.rs"]
 mod crdt_graph_with_data_generated;
 
+// As flatc wrote it: regenerated, never edited, so never formatted.
+#[rustfmt::skip]
 #[allow(unused_imports, dead_code, clippy::all)]
 #[path = "crdt_graph_with_str_data_generated.rs"]
 mod crdt_graph_with_str_data_generated;

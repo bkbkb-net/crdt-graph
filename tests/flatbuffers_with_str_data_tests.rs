@@ -51,8 +51,7 @@ fn roundtrip_add_vertex_no_string_data() {
 fn roundtrip_remove_vertex_string_format() {
     let id = new_id();
     let add_vertex_id = new_id();
-    let op: string::Operation =
-        UpdateOperation::RemoveVertex(RemoveVertex { id, add_vertex_id });
+    let op: string::Operation = UpdateOperation::RemoveVertex(RemoveVertex { id, add_vertex_id });
     let buf = fb::encode_operation(&op);
     let decoded = fb::decode_operation(&buf).unwrap();
     match decoded {
@@ -114,8 +113,7 @@ fn roundtrip_add_edge_no_string_data() {
 fn roundtrip_remove_edge_string_format() {
     let id = new_id();
     let add_edge_id = new_id();
-    let op: string::Operation =
-        UpdateOperation::RemoveEdge(RemoveEdge { id, add_edge_id });
+    let op: string::Operation = UpdateOperation::RemoveEdge(RemoveEdge { id, add_edge_id });
     let buf = fb::encode_operation(&op);
     let decoded = fb::decode_operation(&buf).unwrap();
     match decoded {
@@ -144,10 +142,7 @@ fn roundtrip_operation_log_string() {
             id: v1,
             data: Some("Alice".into()),
         }),
-        UpdateOperation::AddVertex(AddVertex {
-            id: v2,
-            data: None,
-        }),
+        UpdateOperation::AddVertex(AddVertex { id: v2, data: None }),
         UpdateOperation::AddEdge(AddEdge {
             id: e1,
             source: v1,
@@ -245,10 +240,7 @@ fn two_replica_sync_string() {
         }))
         .unwrap();
     let op2 = replica_a
-        .prepare(UpdateOperation::AddVertex(AddVertex {
-            id: v2,
-            data: None,
-        }))
+        .prepare(UpdateOperation::AddVertex(AddVertex { id: v2, data: None }))
         .unwrap();
     let op3 = replica_a
         .prepare(UpdateOperation::AddEdge(AddEdge {

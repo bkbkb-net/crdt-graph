@@ -70,10 +70,8 @@ fn two_replicas_concurrent_edge_add_same_vertices() {
     let v2 = new_id();
 
     // Setup: both have v1, v2
-    let ops: Vec<simple::Operation> = vec![
-        AddVertex { id: v1 }.into(),
-        AddVertex { id: v2 }.into(),
-    ];
+    let ops: Vec<simple::Operation> =
+        vec![AddVertex { id: v1 }.into(), AddVertex { id: v2 }.into()];
     for op in &ops {
         ra.update_operation(op.clone()).unwrap();
         rb.apply_downstream(op.clone()).unwrap();
@@ -83,10 +81,24 @@ fn two_replicas_concurrent_edge_add_same_vertices() {
     let ea = new_id();
     let eb = new_id();
     let op_a = ra
-        .prepare(AddEdge { id: ea, source: v1, target: v2 }.into())
+        .prepare(
+            AddEdge {
+                id: ea,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
         .unwrap();
     let op_b = rb
-        .prepare(AddEdge { id: eb, source: v1, target: v2 }.into())
+        .prepare(
+            AddEdge {
+                id: eb,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
         .unwrap();
 
     rb.apply_downstream(op_a).unwrap();
@@ -127,13 +139,26 @@ fn two_replicas_concurrent_add_edge_and_remove_vertex() {
     // A adds edge v1→v2
     let e1 = new_id();
     let op_a = ra
-        .prepare(AddEdge { id: e1, source: v1, target: v2 }.into())
+        .prepare(
+            AddEdge {
+                id: e1,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
         .unwrap();
 
     // B removes v1 (no edges on B's view, so atSource succeeds)
     let rv1 = new_id();
     let op_b = rb
-        .prepare(RemoveVertex { id: rv1, add_vertex_id: v1 }.into())
+        .prepare(
+            RemoveVertex {
+                id: rv1,
+                add_vertex_id: v1,
+            }
+            .into(),
+        )
         .unwrap();
 
     // Cross-deliver
@@ -171,10 +196,22 @@ fn two_replicas_concurrent_remove_same_vertex() {
     let rv_b = new_id();
 
     let op_a = ra
-        .prepare(RemoveVertex { id: rv_a, add_vertex_id: v1 }.into())
+        .prepare(
+            RemoveVertex {
+                id: rv_a,
+                add_vertex_id: v1,
+            }
+            .into(),
+        )
         .unwrap();
     let op_b = rb
-        .prepare(RemoveVertex { id: rv_b, add_vertex_id: v1 }.into())
+        .prepare(
+            RemoveVertex {
+                id: rv_b,
+                add_vertex_id: v1,
+            }
+            .into(),
+        )
         .unwrap();
 
     // Cross-deliver: each receives the other's remove
@@ -203,7 +240,12 @@ fn two_replicas_concurrent_remove_same_edge() {
     for op in [
         AddVertex { id: v1 }.into(),
         AddVertex { id: v2 }.into(),
-        AddEdge { id: e1, source: v1, target: v2 }.into(),
+        AddEdge {
+            id: e1,
+            source: v1,
+            target: v2,
+        }
+        .into(),
     ] {
         let broadcast: simple::Operation = ra.prepare(op).unwrap();
         rb.apply_downstream(broadcast).unwrap();
@@ -214,10 +256,22 @@ fn two_replicas_concurrent_remove_same_edge() {
     let re_b = new_id();
 
     let op_a = ra
-        .prepare(RemoveEdge { id: re_a, add_edge_id: e1 }.into())
+        .prepare(
+            RemoveEdge {
+                id: re_a,
+                add_edge_id: e1,
+            }
+            .into(),
+        )
         .unwrap();
     let op_b = rb
-        .prepare(RemoveEdge { id: re_b, add_edge_id: e1 }.into())
+        .prepare(
+            RemoveEdge {
+                id: re_b,
+                add_edge_id: e1,
+            }
+            .into(),
+        )
         .unwrap();
 
     rb.apply_downstream(op_a).unwrap();
@@ -242,7 +296,14 @@ fn downstream_add_edge_before_vertices_succeeds() {
 
     // Deliver addEdge first — no vertices exist yet
     remote
-        .apply_downstream(AddEdge { id: e1, source: v1, target: v2 }.into())
+        .apply_downstream(
+            AddEdge {
+                id: e1,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
         .unwrap();
 
     // Edge is in E_A, but no vertices → petgraph is empty
@@ -273,7 +334,13 @@ fn downstream_remove_vertex_before_add_vertex_fails() {
 
     // removeVertex before addVertex → fails
     let err = remote
-        .apply_downstream(RemoveVertex { id: rv1, add_vertex_id: v1 }.into())
+        .apply_downstream(
+            RemoveVertex {
+                id: rv1,
+                add_vertex_id: v1,
+            }
+            .into(),
+        )
         .unwrap_err();
     assert!(matches!(err, TwoPTwoPGraphError::AddVertexNotDelivered(_)));
 
@@ -282,7 +349,13 @@ fn downstream_remove_vertex_before_add_vertex_fails() {
         .apply_downstream(AddVertex { id: v1 }.into())
         .unwrap();
     remote
-        .apply_downstream(RemoveVertex { id: rv1, add_vertex_id: v1 }.into())
+        .apply_downstream(
+            RemoveVertex {
+                id: rv1,
+                add_vertex_id: v1,
+            }
+            .into(),
+        )
         .unwrap();
 
     assert!(!remote.lookup_vertex(&v1));
@@ -299,7 +372,13 @@ fn downstream_remove_edge_before_add_edge_fails() {
     let re1 = new_id();
 
     let err = remote
-        .apply_downstream(RemoveEdge { id: re1, add_edge_id: e1 }.into())
+        .apply_downstream(
+            RemoveEdge {
+                id: re1,
+                add_edge_id: e1,
+            }
+            .into(),
+        )
         .unwrap_err();
     assert!(matches!(err, TwoPTwoPGraphError::AddEdgeNotDelivered(_)));
 
@@ -307,10 +386,23 @@ fn downstream_remove_edge_before_add_edge_fails() {
     let v1 = new_id();
     let v2 = new_id();
     remote
-        .apply_downstream(AddEdge { id: e1, source: v1, target: v2 }.into())
+        .apply_downstream(
+            AddEdge {
+                id: e1,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
         .unwrap();
     remote
-        .apply_downstream(RemoveEdge { id: re1, add_edge_id: e1 }.into())
+        .apply_downstream(
+            RemoveEdge {
+                id: re1,
+                add_edge_id: e1,
+            }
+            .into(),
+        )
         .unwrap();
 }
 
@@ -333,9 +425,34 @@ fn reverse_delivery_order() {
     let ops: Vec<simple::Operation> = vec![
         origin.prepare(AddVertex { id: v1 }.into()).unwrap(),
         origin.prepare(AddVertex { id: v2 }.into()).unwrap(),
-        origin.prepare(AddEdge { id: e1, source: v1, target: v2 }.into()).unwrap(),
-        origin.prepare(RemoveEdge { id: re1, add_edge_id: e1 }.into()).unwrap(),
-        origin.prepare(RemoveVertex { id: rv1, add_vertex_id: v1 }.into()).unwrap(),
+        origin
+            .prepare(
+                AddEdge {
+                    id: e1,
+                    source: v1,
+                    target: v2,
+                }
+                .into(),
+            )
+            .unwrap(),
+        origin
+            .prepare(
+                RemoveEdge {
+                    id: re1,
+                    add_edge_id: e1,
+                }
+                .into(),
+            )
+            .unwrap(),
+        origin
+            .prepare(
+                RemoveVertex {
+                    id: rv1,
+                    add_vertex_id: v1,
+                }
+                .into(),
+            )
+            .unwrap(),
     ];
 
     // Deliver in reverse order, buffering failed ops
@@ -389,13 +506,34 @@ fn three_replicas_independent_edits_converge() {
     let ec = new_id();
 
     let op_a = ra
-        .prepare(AddEdge { id: ea, source: v1, target: v2 }.into())
+        .prepare(
+            AddEdge {
+                id: ea,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
         .unwrap();
     let op_b = rb
-        .prepare(AddEdge { id: eb, source: v2, target: v3 }.into())
+        .prepare(
+            AddEdge {
+                id: eb,
+                source: v2,
+                target: v3,
+            }
+            .into(),
+        )
         .unwrap();
     let op_c = rc
-        .prepare(AddEdge { id: ec, source: v3, target: v1 }.into())
+        .prepare(
+            AddEdge {
+                id: ec,
+                source: v3,
+                target: v1,
+            }
+            .into(),
+        )
         .unwrap();
 
     // Full mesh sync: everyone delivers to everyone else
@@ -434,8 +572,24 @@ fn three_replicas_different_delivery_order_converge() {
         ra.prepare(AddVertex { id: v1 }.into()).unwrap(),
         ra.prepare(AddVertex { id: v2 }.into()).unwrap(),
         ra.prepare(AddVertex { id: v3 }.into()).unwrap(),
-        ra.prepare(AddEdge { id: e1, source: v1, target: v2 }.into()).unwrap(),
-        ra.prepare(AddEdge { id: e2, source: v2, target: v3 }.into()).unwrap(),
+        ra.prepare(
+            AddEdge {
+                id: e1,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
+        .unwrap(),
+        ra.prepare(
+            AddEdge {
+                id: e2,
+                source: v2,
+                target: v3,
+            }
+            .into(),
+        )
+        .unwrap(),
     ];
 
     // B receives in original order
@@ -468,10 +622,7 @@ fn network_partition_bulk_sync() {
     let v3 = new_id();
 
     // Setup: both have v1, v2
-    for op in [
-        AddVertex { id: v1 }.into(),
-        AddVertex { id: v2 }.into(),
-    ] {
+    for op in [AddVertex { id: v1 }.into(), AddVertex { id: v2 }.into()] {
         let broadcast: simple::Operation = ra.prepare(op).unwrap();
         rb.apply_downstream(broadcast).unwrap();
     }
@@ -482,26 +633,52 @@ fn network_partition_bulk_sync() {
     a_ops.push(ra.prepare(AddVertex { id: v3 }.into()).unwrap());
     let e1 = new_id();
     a_ops.push(
-        ra.prepare(AddEdge { id: e1, source: v1, target: v3 }.into())
-            .unwrap(),
+        ra.prepare(
+            AddEdge {
+                id: e1,
+                source: v1,
+                target: v3,
+            }
+            .into(),
+        )
+        .unwrap(),
     );
 
     // B: adds edge v1→v2, removes it, then removes v2
     let mut b_ops = Vec::new();
     let e2 = new_id();
     b_ops.push(
-        rb.prepare(AddEdge { id: e2, source: v1, target: v2 }.into())
-            .unwrap(),
+        rb.prepare(
+            AddEdge {
+                id: e2,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
+        .unwrap(),
     );
     let re2 = new_id();
     b_ops.push(
-        rb.prepare(RemoveEdge { id: re2, add_edge_id: e2 }.into())
-            .unwrap(),
+        rb.prepare(
+            RemoveEdge {
+                id: re2,
+                add_edge_id: e2,
+            }
+            .into(),
+        )
+        .unwrap(),
     );
     let rv2 = new_id();
     b_ops.push(
-        rb.prepare(RemoveVertex { id: rv2, add_vertex_id: v2 }.into())
-            .unwrap(),
+        rb.prepare(
+            RemoveVertex {
+                id: rv2,
+                add_vertex_id: v2,
+            }
+            .into(),
+        )
+        .unwrap(),
     );
 
     // ---- RECONNECT: bulk sync ----
@@ -534,10 +711,7 @@ fn partition_concurrent_edge_add_and_vertex_remove() {
     let v1 = new_id();
     let v2 = new_id();
 
-    for op in [
-        AddVertex { id: v1 }.into(),
-        AddVertex { id: v2 }.into(),
-    ] {
+    for op in [AddVertex { id: v1 }.into(), AddVertex { id: v2 }.into()] {
         let broadcast: simple::Operation = ra.prepare(op).unwrap();
         rb.apply_downstream(broadcast).unwrap();
     }
@@ -545,17 +719,30 @@ fn partition_concurrent_edge_add_and_vertex_remove() {
     // PARTITION
     let e1 = new_id();
     let op_a = ra
-        .prepare(AddEdge { id: e1, source: v2, target: v1 }.into())
+        .prepare(
+            AddEdge {
+                id: e1,
+                source: v2,
+                target: v1,
+            }
+            .into(),
+        )
         .unwrap();
 
     let rv1 = new_id();
     let op_b = rb
-        .prepare(RemoveVertex { id: rv1, add_vertex_id: v1 }.into())
+        .prepare(
+            RemoveVertex {
+                id: rv1,
+                add_vertex_id: v1,
+            }
+            .into(),
+        )
         .unwrap();
 
     // RECONNECT
-    rb.apply_downstream(op_a).unwrap();  // edge added, v1 already removed on B
-    ra.apply_downstream(op_b).unwrap();  // v1 removed on A
+    rb.apply_downstream(op_a).unwrap(); // edge added, v1 already removed on B
+    ra.apply_downstream(op_b).unwrap(); // v1 removed on A
 
     // Both: v1 removed, v2 alive, edge in E_A but dangling
     assert!(!ra.lookup_vertex(&v1));
@@ -595,10 +782,24 @@ fn four_replicas_diamond_topology() {
     let ec = new_id();
 
     let op_b = rb
-        .prepare(AddEdge { id: eb, source: v1, target: v2 }.into())
+        .prepare(
+            AddEdge {
+                id: eb,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
         .unwrap();
     let op_c = rc
-        .prepare(AddEdge { id: ec, source: v2, target: v1 }.into())
+        .prepare(
+            AddEdge {
+                id: ec,
+                source: v2,
+                target: v1,
+            }
+            .into(),
+        )
         .unwrap();
 
     // B → D, C → D (D gets both vertices + both edges)
@@ -614,8 +815,18 @@ fn four_replicas_diamond_topology() {
 
     // Sync B,C edges to A
     let all_edges_for_a: Vec<simple::Operation> = vec![
-        AddEdge { id: eb, source: v1, target: v2 }.into(),
-        AddEdge { id: ec, source: v2, target: v1 }.into(),
+        AddEdge {
+            id: eb,
+            source: v1,
+            target: v2,
+        }
+        .into(),
+        AddEdge {
+            id: ec,
+            source: v2,
+            target: v1,
+        }
+        .into(),
     ];
     for op in all_edges_for_a {
         ra.apply_downstream(op).unwrap();
@@ -649,7 +860,15 @@ fn multi_replica_sync_via_flatbuffers() {
         ra.prepare(AddVertex { id: v1 }.into()).unwrap(),
         ra.prepare(AddVertex { id: v2 }.into()).unwrap(),
         ra.prepare(AddVertex { id: v3 }.into()).unwrap(),
-        ra.prepare(AddEdge { id: e1, source: v1, target: v2 }.into()).unwrap(),
+        ra.prepare(
+            AddEdge {
+                id: e1,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
+        .unwrap(),
     ];
 
     // A → B via FlatBuffers
@@ -661,7 +880,14 @@ fn multi_replica_sync_via_flatbuffers() {
     // B adds an edge and syncs to C via FlatBuffers
     let e2 = new_id();
     let op_b = rb
-        .prepare(AddEdge { id: e2, source: v2, target: v3 }.into())
+        .prepare(
+            AddEdge {
+                id: e2,
+                source: v2,
+                target: v3,
+            }
+            .into(),
+        )
         .unwrap();
 
     // C gets A's ops + B's op in a single log
@@ -739,14 +965,24 @@ fn many_concurrent_operations_three_replicas() {
         let e = new_id();
         edge_ops_a.push(
             ra.prepare(
-                AddEdge { id: e, source: a_verts[i], target: b_verts[i] }.into(),
+                AddEdge {
+                    id: e,
+                    source: a_verts[i],
+                    target: b_verts[i],
+                }
+                .into(),
             )
             .unwrap(),
         );
         let e = new_id();
         edge_ops_b.push(
             rb.prepare(
-                AddEdge { id: e, source: b_verts[i], target: c_verts[i] }.into(),
+                AddEdge {
+                    id: e,
+                    source: b_verts[i],
+                    target: c_verts[i],
+                }
+                .into(),
             )
             .unwrap(),
         );
@@ -786,7 +1022,12 @@ fn concurrent_remove_both_endpoints_of_edge() {
     for op in [
         AddVertex { id: v1 }.into(),
         AddVertex { id: v2 }.into(),
-        AddEdge { id: e1, source: v1, target: v2 }.into(),
+        AddEdge {
+            id: e1,
+            source: v1,
+            target: v2,
+        }
+        .into(),
     ] {
         let broadcast: simple::Operation = ra.prepare(op).unwrap();
         rb.apply_downstream(broadcast).unwrap();
@@ -796,16 +1037,44 @@ fn concurrent_remove_both_endpoints_of_edge() {
     let re1 = new_id();
     let rv1 = new_id();
     let ops_a: Vec<simple::Operation> = vec![
-        ra.prepare(RemoveEdge { id: re1, add_edge_id: e1 }.into()).unwrap(),
-        ra.prepare(RemoveVertex { id: rv1, add_vertex_id: v1 }.into()).unwrap(),
+        ra.prepare(
+            RemoveEdge {
+                id: re1,
+                add_edge_id: e1,
+            }
+            .into(),
+        )
+        .unwrap(),
+        ra.prepare(
+            RemoveVertex {
+                id: rv1,
+                add_vertex_id: v1,
+            }
+            .into(),
+        )
+        .unwrap(),
     ];
 
     // B also removes edge, then target vertex
     let re1b = new_id();
     let rv2 = new_id();
     let ops_b: Vec<simple::Operation> = vec![
-        rb.prepare(RemoveEdge { id: re1b, add_edge_id: e1 }.into()).unwrap(),
-        rb.prepare(RemoveVertex { id: rv2, add_vertex_id: v2 }.into()).unwrap(),
+        rb.prepare(
+            RemoveEdge {
+                id: re1b,
+                add_edge_id: e1,
+            }
+            .into(),
+        )
+        .unwrap(),
+        rb.prepare(
+            RemoveVertex {
+                id: rv2,
+                add_vertex_id: v2,
+            }
+            .into(),
+        )
+        .unwrap(),
     ];
 
     // Cross-deliver
@@ -841,13 +1110,26 @@ fn self_loop_concurrent_vertex_remove() {
     // A adds self-loop
     let e1 = new_id();
     let op_a = ra
-        .prepare(AddEdge { id: e1, source: v1, target: v1 }.into())
+        .prepare(
+            AddEdge {
+                id: e1,
+                source: v1,
+                target: v1,
+            }
+            .into(),
+        )
         .unwrap();
 
     // B removes v1 (no edges on B's copy)
     let rv1 = new_id();
     let op_b = rb
-        .prepare(RemoveVertex { id: rv1, add_vertex_id: v1 }.into())
+        .prepare(
+            RemoveVertex {
+                id: rv1,
+                add_vertex_id: v1,
+            }
+            .into(),
+        )
         .unwrap();
 
     // Cross-deliver
@@ -886,7 +1168,14 @@ fn three_replicas_interleaved_add_remove() {
     // B adds edge
     let e1 = new_id();
     let op3 = rb
-        .prepare(AddEdge { id: e1, source: v1, target: v2 }.into())
+        .prepare(
+            AddEdge {
+                id: e1,
+                source: v1,
+                target: v2,
+            }
+            .into(),
+        )
         .unwrap();
     ra.apply_downstream(op3.clone()).unwrap();
     rc.apply_downstream(op3.clone()).unwrap();
@@ -894,7 +1183,13 @@ fn three_replicas_interleaved_add_remove() {
     // C removes the edge
     let re1 = new_id();
     let op4 = rc
-        .prepare(RemoveEdge { id: re1, add_edge_id: e1 }.into())
+        .prepare(
+            RemoveEdge {
+                id: re1,
+                add_edge_id: e1,
+            }
+            .into(),
+        )
         .unwrap();
     ra.apply_downstream(op4.clone()).unwrap();
     rb.apply_downstream(op4.clone()).unwrap();
@@ -902,11 +1197,11 @@ fn three_replicas_interleaved_add_remove() {
     // Fresh replica D receives all ops in shuffled order:
     // addEdge, removeEdge, addVertex v2, addVertex v1
     let mut rd = Graph::new();
-    rd.apply_downstream(op3).unwrap();         // addEdge (succeeds: downstream)
-    // removeEdge succeeds because addEdge already delivered
+    rd.apply_downstream(op3).unwrap(); // addEdge (succeeds: downstream)
+                                       // removeEdge succeeds because addEdge already delivered
     rd.apply_downstream(op4).unwrap();
-    rd.apply_downstream(op2).unwrap();         // addVertex v2
-    rd.apply_downstream(op1).unwrap();         // addVertex v1
+    rd.apply_downstream(op2).unwrap(); // addVertex v2
+    rd.apply_downstream(op1).unwrap(); // addVertex v1
 
     // All four converge: 2 vertices, 0 edges
     assert_eq!(rd.vertex_count(), 2);

@@ -51,8 +51,7 @@ fn roundtrip_add_vertex_no_data() {
 fn roundtrip_remove_vertex_with_data_format() {
     let id = new_id();
     let add_vertex_id = new_id();
-    let op: bytes::Operation =
-        UpdateOperation::RemoveVertex(RemoveVertex { id, add_vertex_id });
+    let op: bytes::Operation = UpdateOperation::RemoveVertex(RemoveVertex { id, add_vertex_id });
     let buf = fb::encode_operation(&op);
     let decoded = fb::decode_operation(&buf).unwrap();
     match decoded {
@@ -115,8 +114,7 @@ fn roundtrip_add_edge_no_data() {
 fn roundtrip_remove_edge_with_data_format() {
     let id = new_id();
     let add_edge_id = new_id();
-    let op: bytes::Operation =
-        UpdateOperation::RemoveEdge(RemoveEdge { id, add_edge_id });
+    let op: bytes::Operation = UpdateOperation::RemoveEdge(RemoveEdge { id, add_edge_id });
     let buf = fb::encode_operation(&op);
     let decoded = fb::decode_operation(&buf).unwrap();
     match decoded {
@@ -145,10 +143,7 @@ fn roundtrip_operation_log_with_data() {
             id: v1,
             data: Some(br#"{"label":"Alice"}"#.to_vec()),
         }),
-        UpdateOperation::AddVertex(AddVertex {
-            id: v2,
-            data: None,
-        }),
+        UpdateOperation::AddVertex(AddVertex { id: v2, data: None }),
         UpdateOperation::AddEdge(AddEdge {
             id: e1,
             source: v1,
@@ -253,10 +248,7 @@ fn two_replica_sync_with_data() {
         }))
         .unwrap();
     let op2 = replica_a
-        .prepare(UpdateOperation::AddVertex(AddVertex {
-            id: v2,
-            data: None,
-        }))
+        .prepare(UpdateOperation::AddVertex(AddVertex { id: v2, data: None }))
         .unwrap();
     let op3 = replica_a
         .prepare(UpdateOperation::AddEdge(AddEdge {

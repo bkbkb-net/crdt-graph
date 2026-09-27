@@ -1,7 +1,7 @@
+use super::{RemoveEdge, RemoveVertex};
 use crate::graph::{
     TwoPTwoPAddEdge, TwoPTwoPAddVertex, TwoPTwoPGraph, TwoPTwoPId, UpdateOperation,
 };
-use super::{RemoveEdge, RemoveVertex};
 use uuid::Uuid;
 
 /// A vertex-add operation carrying only an identifier.
