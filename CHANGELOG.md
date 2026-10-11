@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Indexed lookups** — `vertex_added(id)`, `edge_added(id)`, `edge_position(id)`, `edge_is_removed(id)` and `incident_edges(id)` on `TwoPTwoPGraph`.
+
+### Changed
+
+- **Indexed graph** — `TwoPTwoPGraph` keeps its four sets as append-only histories plus an index derived from them: membership, liveness and every precondition are expected O(1), an edge's incidence O(log degree), and replaying `n` operations is linear rather than quadratic. Results, errors and their precedence — including the edge `VertexHasEdge` reports, the earliest in `E_A` — are unchanged, checked against the previous implementation kept verbatim in `tests/support/scan_graph.rs`.
+- **`Debug`** prints the four histories only; the index is derived and left out (and `_phantom` is gone).
+- A panicking `Clone` of the identifier type leaves the graph unchanged: every key is cloned before anything is modified. `Hash` and `Eq` must not panic.
+
 ## [0.3.1] - 2026-04-11
 
 ### Added

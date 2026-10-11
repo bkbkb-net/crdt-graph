@@ -33,6 +33,7 @@ Updates follow the **op-based CRDT** model with two phases:
 - **`petgraph` integration** — Convert CRDT state to a standard `DiGraph` for graph algorithms.
 - **Convenience traits** — `Default`, `PartialEq`, `Eq`, `Hash`, `From` conversions on all operation types.
 - **State inspection** — `vertex_count()`, `edge_count()`, `is_empty()`, `vertices()`, `edges()` iterators.
+- **Indexed** — the four sets are append-only histories with an index derived from them, so membership, liveness and every precondition are expected O(1) (an edge's incidence O(log degree)) and replaying `n` operations is linear, not quadratic.
 
 ## Quick Start
 
@@ -162,6 +163,11 @@ Batch encoding/decoding is also supported via `encode_operation_log()` / `decode
 | `is_empty()` | `true` if no active vertices or edges. |
 | `vertices()` | Iterator over active vertices. |
 | `edges()` | Iterator over active edges. |
+| `vertex_added(id)` / `edge_added(id)` | The add operation with this id, removed or not. |
+| `edge_position(id)` | The edge's place in `E_A`. |
+| `edge_is_removed(id)` | `true` if the edge was added and some replica removed it. |
+| `incident_edges(id)` | Edges in `E_A \ E_R` touching the vertex, in `E_A` order — the set the `removeVertex` precondition is about. |
+| `all_vertices_added()` … `all_edges_removed()` | The four histories, in the order they were applied. |
 | `generate_petgraph()` | Converts the current state into a `petgraph::DiGraph`. |
 
 ## Preconditions
