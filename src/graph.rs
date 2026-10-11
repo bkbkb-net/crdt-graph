@@ -202,6 +202,12 @@ where
             .map(|&at| &self.edges_added[at])
     }
 
+    /// The edge's place in `E_A`, removed or not: the order the history
+    /// holds, and the one serialisation writes.
+    pub fn edge_position(&self, edge_id: &I) -> Option<usize> {
+        self.index.edge_at.get(edge_id).copied()
+    }
+
     /// Returns `true` if the edge was added and some replica removed it:
     /// it is in `E_A` and referenced from `E_R`.
     pub fn edge_is_removed(&self, edge_id: &I) -> bool {

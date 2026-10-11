@@ -242,6 +242,11 @@ fn assert_agree(indexed: &Indexed, scanned: &Scanned, ranges: &Ranges, context: 
             "{context}: edge_added({id})"
         );
         assert_eq!(
+            indexed.edge_position(&id),
+            scanned.all_edges_added().iter().position(|ea| ea.id == id),
+            "{context}: edge_position({id})"
+        );
+        assert_eq!(
             indexed.edge_is_removed(&id),
             scanned
                 .all_edges_removed()
